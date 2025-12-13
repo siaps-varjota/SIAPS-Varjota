@@ -1,35 +1,51 @@
-import { useCsvData } from "@/hooks/useCsvData";
+import { useState, useCallback } from "react";
+import { useCsvData, CsvRow } from "@/hooks/useCsvData";
 import { CSV_URLS } from "@/lib/csvUrls";
 import { LoadingState } from "../LoadingState";
 import { ErrorState } from "../ErrorState";
 import { MetricCard } from "../MetricCard";
 import { DataTable } from "../DataTable";
 import { ProgressChart } from "../ProgressChart";
-import { Baby, Users, CheckCircle2, Clock, Stethoscope, Scale } from "lucide-react";
+import { Baby, Users, CheckCircle2, Stethoscope } from "lucide-react";
 
 export function DesenvolvimentoInfantilTab() {
   const { data, loading, error } = useCsvData(CSV_URLS.desenvolvimentoInfantil);
+  const [filteredRows, setFilteredRows] = useState<CsvRow[]>([]);
+  const [isFiltered, setIsFiltered] = useState(false);
+
+  const handleFilteredRowsChange = useCallback((rows: CsvRow[], equipeFilter: string) => {
+    setFilteredRows(rows);
+    setIsFiltered(equipeFilter !== "all");
+  }, []);
 
   if (loading) return <LoadingState />;
   if (error) return <ErrorState message={error} />;
   if (!data) return null;
 
-  // Calculate metrics from data
-  const total = data.rows.length;
-  const comPrimeiraConsulta = data.rows.filter(
+  // Use filtered rows if filter is applied, otherwise use all rows
+  const activeRows = isFiltered ? filteredRows : data.rows;
+  const total = activeRows.length;
+  
+  const comPrimeiraConsulta = activeRows.filter(
     (r) => r["IDADE 1ª CONSULTA (<=30 DIAS)"] && r["IDADE 1ª CONSULTA (<=30 DIAS)"] !== ""
   ).length;
-  const comPrimeiraVisita = data.rows.filter(
+  const comPrimeiraVisita = activeRows.filter(
     (r) => r["1ª VISITA ACS (<=30 DIAS)"] && r["1ª VISITA ACS (<=30 DIAS)"] !== ""
   ).length;
-  const comNoveConsultas = data.rows.filter(
+  const comNoveConsultas = activeRows.filter(
     (r) => r["TOTAL DE CONSULTAS (9)"] === "SIM"
   ).length;
-  const comNovePesoAltura = data.rows.filter(
+  const comNovePesoAltura = activeRows.filter(
     (r) => r["TOTAL DE PESO & ALTURA (9)"] === "SIM"
   ).length;
-  const realizadas = data.rows.filter(
+  const realizadas = activeRows.filter(
     (r) => r["STATUS DAS BOAS PRÁTICAS"]?.includes("REALIZADAS")
+  ).length;
+  const faltando = activeRows.filter(
+    (r) => r["STATUS DAS BOAS PRÁTICAS"]?.includes("FALTANDO")
+  ).length;
+  const prioridade = activeRows.filter(
+    (r) => r["STATUS DAS BOAS PRÁTICAS"]?.includes("PRIORIDADE")
   ).length;
 
   return (
@@ -44,21 +60,21 @@ export function DesenvolvimentoInfantilTab() {
         <MetricCard
           title="1ª Consulta ≤30 dias"
           value={comPrimeiraConsulta}
-          subtitle={`${Math.round((comPrimeiraConsulta / total) * 100)}% do total`}
+          subtitle={total > 0 ? `${Math.round((comPrimeiraConsulta / total) * 100)}% do total` : "0%"}
           icon={Stethoscope}
           variant="success"
         />
         <MetricCard
           title="9+ Consultas"
           value={comNoveConsultas}
-          subtitle={`${Math.round((comNoveConsultas / total) * 100)}% do total`}
+          subtitle={total > 0 ? `${Math.round((comNoveConsultas / total) * 100)}% do total` : "0%"}
           icon={CheckCircle2}
           variant="default"
         />
         <MetricCard
           title="Boas Práticas Realizadas"
           value={realizadas}
-          subtitle={`${Math.round((realizadas / total) * 100)}% do total`}
+          subtitle={total > 0 ? `${Math.round((realizadas / total) * 100)}% do total` : "0%"}
           icon={Users}
           variant="success"
         />
@@ -104,20 +120,8 @@ export function DesenvolvimentoInfantilTab() {
           <div className="space-y-3">
             {[
               { label: "Realizadas", count: realizadas, color: "bg-success" },
-              {
-                label: "Faltando",
-                count: data.rows.filter((r) =>
-                  r["STATUS DAS BOAS PRÁTICAS"]?.includes("FALTANDO")
-                ).length,
-                color: "bg-warning",
-              },
-              {
-                label: "Prioridade",
-                count: data.rows.filter((r) =>
-                  r["STATUS DAS BOAS PRÁTICAS"]?.includes("PRIORIDADE")
-                ).length,
-                color: "bg-destructive",
-              },
+              { label: "Faltando", count: faltando, color: "bg-warning" },
+              { label: "Prioridade", count: prioridade, color: "bg-destructive" },
             ].map((item) => (
               <div
                 key={item.label}
@@ -140,7 +144,14 @@ export function DesenvolvimentoInfantilTab() {
         <h3 className="text-lg font-semibold text-foreground mb-4">
           Registro de Crianças
         </h3>
-        <DataTable headers={data.headers} rows={data.rows} />
+        <DataTable 
+          headers={data.headers} 
+          rows={data.rows} 
+          columnStart={1}
+          columnEnd={14}
+          onFilteredRowsChange={handleFilteredRowsChange}
+          title="Desenvolvimento Infantil - Boas Práticas"
+        />
       </div>
     </div>
   );

@@ -1,24 +1,36 @@
-import { useCsvData } from "@/hooks/useCsvData";
+import { useState, useCallback } from "react";
+import { useCsvData, CsvRow } from "@/hooks/useCsvData";
 import { CSV_URLS } from "@/lib/csvUrls";
 import { LoadingState } from "../LoadingState";
 import { ErrorState } from "../ErrorState";
 import { MetricCard } from "../MetricCard";
 import { DataTable } from "../DataTable";
 import { ProgressChart } from "../ProgressChart";
-import { Droplet, Users, Stethoscope, Activity, CheckCircle2 } from "lucide-react";
+import { Droplet, Users, Stethoscope, CheckCircle2 } from "lucide-react";
 
 export function DiabetesTab() {
   const { data, loading, error } = useCsvData(CSV_URLS.diabetes);
+  const [filteredRows, setFilteredRows] = useState<CsvRow[]>([]);
+  const [isFiltered, setIsFiltered] = useState(false);
+
+  const handleFilteredRowsChange = useCallback((rows: CsvRow[], equipeFilter: string) => {
+    setFilteredRows(rows);
+    setIsFiltered(equipeFilter !== "all");
+  }, []);
 
   if (loading) return <LoadingState />;
   if (error) return <ErrorState message={error} />;
   if (!data) return null;
 
-  const total = data.rows.length;
-  const comConsulta = data.rows.filter((r) => r["DATA DA CONSULTA ATUAL"] && r["DATA DA CONSULTA ATUAL"] !== "").length;
-  const comHbGlicada = data.rows.filter((r) => r["HB GLICADA"] && r["HB GLICADA"] !== "").length;
-  const comAvalPes = data.rows.filter((r) => r["DATA DA AVALIAÇÃO DOS PÉS ATUAL"] && r["DATA DA AVALIAÇÃO DOS PÉS ATUAL"] !== "").length;
-  const provavel = data.rows.filter((r) => r["TODAS AS BOAS PRÁTICAS"]?.includes("PROVÁVEL")).length;
+  const activeRows = isFiltered ? filteredRows : data.rows;
+  const total = activeRows.length;
+  
+  const comConsulta = activeRows.filter((r) => r["DATA DA CONSULTA ATUAL"] && r["DATA DA CONSULTA ATUAL"] !== "").length;
+  const comHbGlicada = activeRows.filter((r) => r["HB GLICADA"] && r["HB GLICADA"] !== "").length;
+  const comAvalPes = activeRows.filter((r) => r["DATA DA AVALIAÇÃO DOS PÉS ATUAL"] && r["DATA DA AVALIAÇÃO DOS PÉS ATUAL"] !== "").length;
+  const comPA = activeRows.filter((r) => r["DATA PA ATUAL"] && r["DATA PA ATUAL"] !== "").length;
+  const provavel = activeRows.filter((r) => r["TODAS AS BOAS PRÁTICAS"]?.includes("PROVÁVEL")).length;
+  const naoProvavel = activeRows.filter((r) => r["TODAS AS BOAS PRÁTICAS"]?.includes("NÃO PROVÁVEL")).length;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -32,21 +44,21 @@ export function DiabetesTab() {
         <MetricCard
           title="Com Consulta Atualizada"
           value={comConsulta}
-          subtitle={`${Math.round((comConsulta / total) * 100)}% do total`}
+          subtitle={total > 0 ? `${Math.round((comConsulta / total) * 100)}% do total` : "0%"}
           icon={Stethoscope}
           variant="success"
         />
         <MetricCard
           title="Hemoglobina Glicada"
           value={comHbGlicada}
-          subtitle={`${Math.round((comHbGlicada / total) * 100)}% do total`}
+          subtitle={total > 0 ? `${Math.round((comHbGlicada / total) * 100)}% do total` : "0%"}
           icon={Droplet}
           variant="default"
         />
         <MetricCard
           title="Boas Práticas Prováveis"
           value={provavel}
-          subtitle={`${Math.round((provavel / total) * 100)}% do total`}
+          subtitle={total > 0 ? `${Math.round((provavel / total) * 100)}% do total` : "0%"}
           icon={CheckCircle2}
           variant="success"
         />
@@ -66,7 +78,7 @@ export function DiabetesTab() {
             />
             <ProgressChart
               label="PA Aferida"
-              value={data.rows.filter((r) => r["DATA PA ATUAL"] && r["DATA PA ATUAL"] !== "").length}
+              value={comPA}
               total={total}
               color="info"
             />
@@ -92,13 +104,7 @@ export function DiabetesTab() {
           <div className="space-y-3">
             {[
               { label: "Provável", count: provavel, color: "bg-success" },
-              {
-                label: "Não Provável",
-                count: data.rows.filter((r) =>
-                  r["TODAS AS BOAS PRÁTICAS"]?.includes("NÃO PROVÁVEL")
-                ).length,
-                color: "bg-destructive",
-              },
+              { label: "Não Provável", count: naoProvavel, color: "bg-destructive" },
             ].map((item) => (
               <div
                 key={item.label}
@@ -121,7 +127,14 @@ export function DiabetesTab() {
         <h3 className="text-lg font-semibold text-foreground mb-4">
           Registro de Pacientes Diabéticos
         </h3>
-        <DataTable headers={data.headers} rows={data.rows} />
+        <DataTable 
+          headers={data.headers} 
+          rows={data.rows}
+          columnStart={1}
+          columnEnd={13}
+          onFilteredRowsChange={handleFilteredRowsChange}
+          title="Diabetes"
+        />
       </div>
     </div>
   );

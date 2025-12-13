@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { CsvRow } from "@/hooks/useCsvData";
 import {
   Table,
@@ -19,14 +19,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 interface DataTableProps {
   headers: string[];
   rows: CsvRow[];
-  maxVisibleColumns?: number;
+  columnStart?: number; // 0-indexed (B=1 in Excel, so B=1 means index 1)
+  columnEnd?: number;   // 0-indexed inclusive
+  onFilteredRowsChange?: (filteredRows: CsvRow[], equipeFilter: string) => void;
+  title?: string;
 }
 
 const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -69,7 +71,14 @@ function getUniqueValues(rows: CsvRow[], column: string | null): string[] {
   return Array.from(values).sort();
 }
 
-export function DataTable({ headers, rows, maxVisibleColumns = 8 }: DataTableProps) {
+export function DataTable({ 
+  headers, 
+  rows, 
+  columnStart = 1, 
+  columnEnd,
+  onFilteredRowsChange,
+  title = "Relatório de Dados"
+}: DataTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
@@ -89,8 +98,8 @@ export function DataTable({ headers, rows, maxVisibleColumns = 8 }: DataTablePro
   const columnMapping = useMemo(() => ({
     equipe: findColumn(headers, ["EQUIPE", "Equipe"]),
     microarea: findColumn(headers, ["MICROÁREA", "MICROAREA", "Microárea", "Microarea"]),
-    boasPraticas: findColumn(headers, ["BOAS PRÁTICAS", "BOAS PRATICAS", "Status Boas Práticas"]),
-    vacinas: findColumn(headers, ["VACINAS", "STATUS VACINAS", "Status Vacinas"]),
+    boasPraticas: findColumn(headers, ["BOAS PRÁTICAS", "BOAS PRATICAS", "Status Boas Práticas", "TODAS AS BOAS PRÁTICAS"]),
+    vacinas: findColumn(headers, ["VACINAS", "STATUS VACINAS", "Status Vacinas", "STATUS DAS VACINAS"]),
     prioridade: findColumn(headers, ["PRIORIDADE", "Prioridade"]),
   }), [headers]);
 
@@ -103,12 +112,12 @@ export function DataTable({ headers, rows, maxVisibleColumns = 8 }: DataTablePro
     prioridade: getUniqueValues(rows, columnMapping.prioridade),
   }), [rows, columnMapping]);
 
-  // Filter out empty or metadata columns
+  // Calculate visible headers based on column range (B to X means starting from index 1)
   const visibleHeaders = useMemo(() => {
-    return headers
-      .filter((h) => h && !h.includes("SEERRO") && !h.includes("ARRAYFORMULA"))
-      .slice(0, maxVisibleColumns);
-  }, [headers, maxVisibleColumns]);
+    const cleanHeaders = headers.filter((h) => h && !h.includes("SEERRO") && !h.includes("ARRAYFORMULA"));
+    const endIndex = columnEnd !== undefined ? columnEnd : cleanHeaders.length - 1;
+    return cleanHeaders.slice(columnStart, endIndex + 1);
+  }, [headers, columnStart, columnEnd]);
 
   const filteredRows = useMemo(() => {
     let result = rows.filter((row) => {
@@ -150,6 +159,13 @@ export function DataTable({ headers, rows, maxVisibleColumns = 8 }: DataTablePro
     return result;
   }, [rows, searchTerm, sortColumn, sortDirection, equipeFilter, microareaFilter, boasPraticasFilter, vacinasFilter, prioridadeFilter, columnMapping]);
 
+  // Notify parent about filtered rows changes
+  useMemo(() => {
+    if (onFilteredRowsChange) {
+      onFilteredRowsChange(filteredRows, equipeFilter);
+    }
+  }, [filteredRows, equipeFilter, onFilteredRowsChange]);
+
   const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
   const paginatedRows = filteredRows.slice(
     (currentPage - 1) * rowsPerPage,
@@ -183,7 +199,7 @@ export function DataTable({ headers, rows, maxVisibleColumns = 8 }: DataTablePro
     
     // Title
     doc.setFontSize(16);
-    doc.text("Relatório de Dados", 14, 15);
+    doc.text(title, 14, 15);
     
     // Filter info
     doc.setFontSize(10);
@@ -200,10 +216,16 @@ export function DataTable({ headers, rows, maxVisibleColumns = 8 }: DataTablePro
     doc.text(filterText, 14, 22);
     doc.text(`Total de registros: ${filteredRows.length}`, 14, 28);
     
-    // Table
+    // Table - with row numbers
+    const tableHeaders = ["Nº", ...visibleHeaders];
+    const tableBody = filteredRows.map((row, idx) => [
+      String(idx + 1),
+      ...visibleHeaders.map((h) => row[h] || "—")
+    ]);
+    
     autoTable(doc, {
-      head: [visibleHeaders],
-      body: filteredRows.map((row) => visibleHeaders.map((h) => row[h] || "—")),
+      head: [tableHeaders],
+      body: tableBody,
       startY: 35,
       styles: { fontSize: 8, cellPadding: 2 },
       headStyles: { fillColor: [20, 83, 90], textColor: 255 },
@@ -372,6 +394,7 @@ export function DataTable({ headers, rows, maxVisibleColumns = 8 }: DataTablePro
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/50">
+                <TableHead className="w-12 text-center font-semibold text-xs">Nº</TableHead>
                 {visibleHeaders.map((header) => (
                   <TableHead
                     key={header}
@@ -394,7 +417,7 @@ export function DataTable({ headers, rows, maxVisibleColumns = 8 }: DataTablePro
               {paginatedRows.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={visibleHeaders.length}
+                    colSpan={visibleHeaders.length + 1}
                     className="text-center py-8 text-muted-foreground"
                   >
                     Nenhum registro encontrado
@@ -406,6 +429,9 @@ export function DataTable({ headers, rows, maxVisibleColumns = 8 }: DataTablePro
                     key={idx}
                     className="hover:bg-muted/30 transition-colors"
                   >
+                    <TableCell className="text-sm py-3 text-center font-medium text-muted-foreground">
+                      {(currentPage - 1) * rowsPerPage + idx + 1}
+                    </TableCell>
                     {visibleHeaders.map((header) => (
                       <TableCell key={header} className="text-sm py-3">
                         {isStatusColumn(header) && row[header] ? (
