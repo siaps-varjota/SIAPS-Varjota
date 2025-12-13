@@ -1,4 +1,5 @@
-import { useCsvData } from "@/hooks/useCsvData";
+import { useState, useCallback } from "react";
+import { useCsvData, CsvRow } from "@/hooks/useCsvData";
 import { CSV_URLS } from "@/lib/csvUrls";
 import { LoadingState } from "../LoadingState";
 import { ErrorState } from "../ErrorState";
@@ -9,18 +10,27 @@ import { Syringe, CheckCircle2, AlertTriangle, Users } from "lucide-react";
 
 export function VacinasTab() {
   const { data, loading, error } = useCsvData(CSV_URLS.desenvolvimentoInfantilVacinas);
+  const [filteredRows, setFilteredRows] = useState<CsvRow[]>([]);
+  const [isFiltered, setIsFiltered] = useState(false);
+
+  const handleFilteredRowsChange = useCallback((rows: CsvRow[], equipeFilter: string) => {
+    setFilteredRows(rows);
+    setIsFiltered(equipeFilter !== "all");
+  }, []);
 
   if (loading) return <LoadingState />;
   if (error) return <ErrorState message={error} />;
   if (!data) return null;
 
-  const total = data.rows.length;
-  const comPenta = data.rows.filter((r) => r["3ª PENTA"] && r["3ª PENTA"] !== "").length;
-  const comPolio = data.rows.filter((r) => r["3ª PÓLIO"] && r["3ª PÓLIO"] !== "").length;
-  const comPneumo = data.rows.filter((r) => r["2ª PNEUMO10"] && r["2ª PNEUMO10"] !== "").length;
-  const comTriplice = data.rows.filter((r) => r["2ª TRÍPLICE VIRAL"] && r["2ª TRÍPLICE VIRAL"] !== "").length;
-  const realizadas = data.rows.filter((r) => r["STATUS DAS VACINAS"]?.includes("REALIZADAS")).length;
-  const atrasadas = data.rows.filter((r) => r["STATUS DAS VACINAS"]?.includes("ATRASADAS")).length;
+  const activeRows = isFiltered ? filteredRows : data.rows;
+  const total = activeRows.length;
+  
+  const comPenta = activeRows.filter((r) => r["3ª PENTA"] && r["3ª PENTA"] !== "").length;
+  const comPolio = activeRows.filter((r) => r["3ª PÓLIO"] && r["3ª PÓLIO"] !== "").length;
+  const comPneumo = activeRows.filter((r) => r["2ª PNEUMO10"] && r["2ª PNEUMO10"] !== "").length;
+  const comTriplice = activeRows.filter((r) => r["2ª TRÍPLICE VIRAL"] && r["2ª TRÍPLICE VIRAL"] !== "").length;
+  const realizadas = activeRows.filter((r) => r["STATUS DAS VACINAS"]?.includes("REALIZADAS")).length;
+  const atrasadas = activeRows.filter((r) => r["STATUS DAS VACINAS"]?.includes("ATRASADAS")).length;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -34,21 +44,21 @@ export function VacinasTab() {
         <MetricCard
           title="Vacinas Completas"
           value={realizadas}
-          subtitle={`${Math.round((realizadas / total) * 100)}% do total`}
+          subtitle={total > 0 ? `${Math.round((realizadas / total) * 100)}% do total` : "0%"}
           icon={CheckCircle2}
           variant="success"
         />
         <MetricCard
           title="Vacinas Atrasadas"
           value={atrasadas}
-          subtitle={`${Math.round((atrasadas / total) * 100)}% do total`}
+          subtitle={total > 0 ? `${Math.round((atrasadas / total) * 100)}% do total` : "0%"}
           icon={AlertTriangle}
           variant="destructive"
         />
         <MetricCard
           title="3ª Dose Penta"
           value={comPenta}
-          subtitle={`${Math.round((comPenta / total) * 100)}% do total`}
+          subtitle={total > 0 ? `${Math.round((comPenta / total) * 100)}% do total` : "0%"}
           icon={Syringe}
           variant="default"
         />
@@ -95,11 +105,7 @@ export function VacinasTab() {
             {[
               { label: "Realizadas", count: realizadas, color: "bg-success" },
               { label: "Atrasadas", count: atrasadas, color: "bg-destructive" },
-              {
-                label: "Em andamento",
-                count: total - realizadas - atrasadas,
-                color: "bg-warning",
-              },
+              { label: "Em andamento", count: Math.max(0, total - realizadas - atrasadas), color: "bg-warning" },
             ].map((item) => (
               <div
                 key={item.label}
@@ -122,7 +128,14 @@ export function VacinasTab() {
         <h3 className="text-lg font-semibold text-foreground mb-4">
           Registro de Vacinação
         </h3>
-        <DataTable headers={data.headers} rows={data.rows} />
+        <DataTable 
+          headers={data.headers} 
+          rows={data.rows} 
+          columnStart={1}
+          columnEnd={12}
+          onFilteredRowsChange={handleFilteredRowsChange}
+          title="Desenvolvimento Infantil - Vacinas"
+        />
       </div>
     </div>
   );
