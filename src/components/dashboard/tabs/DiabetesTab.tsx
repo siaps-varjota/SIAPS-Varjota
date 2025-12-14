@@ -29,8 +29,8 @@ export function DiabetesTab() {
   const comHbGlicada = activeRows.filter((r) => r["HB GLICADA"] && r["HB GLICADA"] !== "").length;
   const comAvalPes = activeRows.filter((r) => r["DATA DA AVALIAÇÃO DOS PÉS ATUAL"] && r["DATA DA AVALIAÇÃO DOS PÉS ATUAL"] !== "").length;
   const comPA = activeRows.filter((r) => r["DATA PA ATUAL"] && r["DATA PA ATUAL"] !== "").length;
-  const provavel = activeRows.filter((r) => r["TODAS AS BOAS PRÁTICAS"]?.includes("PROVÁVEL")).length;
-  const naoProvavel = activeRows.filter((r) => r["TODAS AS BOAS PRÁTICAS"]?.includes("NÃO PROVÁVEL")).length;
+  const realizadas = activeRows.filter((r) => r["TODAS AS BOAS PRÁTICAS"]?.toUpperCase().includes("REALIZADA")).length;
+  const faltando = activeRows.filter((r) => r["TODAS AS BOAS PRÁTICAS"]?.toUpperCase().includes("FALTANDO")).length;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -56,9 +56,9 @@ export function DiabetesTab() {
           variant="default"
         />
         <MetricCard
-          title="Boas Práticas Prováveis"
-          value={provavel}
-          subtitle={total > 0 ? `${Math.round((provavel / total) * 100)}% do total` : "0%"}
+          title="Boas Práticas Realizadas"
+          value={realizadas}
+          subtitle={total > 0 ? `${Math.round((realizadas / total) * 100)}% do total` : "0%"}
           icon={CheckCircle2}
           variant="success"
         />
@@ -103,8 +103,8 @@ export function DiabetesTab() {
           </h3>
           <div className="space-y-3">
             {[
-              { label: "Provável", count: provavel, color: "bg-success" },
-              { label: "Não Provável", count: naoProvavel, color: "bg-destructive" },
+              { label: "Realizadas", count: realizadas, color: "bg-success" },
+              { label: "Faltando", count: faltando, color: "bg-destructive" },
             ].map((item) => (
               <div
                 key={item.label}
