@@ -6,7 +6,6 @@ import { ErrorState } from "../ErrorState";
 import { MetricCard } from "../MetricCard";
 import { DataTable } from "../DataTable";
 import { ProgressChart } from "../ProgressChart";
-import { ColumnMetrics } from "../ColumnMetrics";
 import { HeartPulse, Users, Stethoscope, FileCheck } from "lucide-react";
 
 export function GestacaoTab() {
@@ -132,13 +131,6 @@ export function GestacaoTab() {
           </div>
         </div>
       </div>
-
-      <ColumnMetrics 
-        rows={activeRows} 
-        headers={data.headers} 
-        columnStart={1} 
-        columnEnd={18} 
-      />
 
       <div className="bg-card rounded-xl border p-5 shadow-card">
         <h3 className="text-lg font-semibold text-foreground mb-4">
