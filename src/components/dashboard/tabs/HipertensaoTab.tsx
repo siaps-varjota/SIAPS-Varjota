@@ -28,8 +28,8 @@ export function HipertensaoTab() {
   const comConsulta = activeRows.filter((r) => r["DATA DA CONSULTA ATUAL"] && r["DATA DA CONSULTA ATUAL"] !== "").length;
   const comPA = activeRows.filter((r) => r["DATA PA ATUAL"] && r["DATA PA ATUAL"] !== "").length;
   const comPesoAltura = activeRows.filter((r) => r["DATA PESO/ALTURA ATUAL"] && r["DATA PESO/ALTURA ATUAL"] !== "").length;
-  const realizadas = activeRows.filter((r) => r["TODAS AS BOAS PRÁTICAS"]?.toUpperCase().includes("REALIZADA")).length;
-  const faltando = activeRows.filter((r) => r["TODAS AS BOAS PRÁTICAS"]?.toUpperCase().includes("FALTANDO")).length;
+  const realizadas = activeRows.filter((r) => r["STATUS DAS BOAS PRÁTICAS"]?.toUpperCase().includes("REALIZADA")).length;
+  const faltando = activeRows.filter((r) => r["STATUS DAS BOAS PRÁTICAS"]?.toUpperCase().includes("FALTANDO")).length;
 
   return (
     <div className="space-y-6 animate-fade-in">

@@ -29,8 +29,8 @@ export function DiabetesTab() {
   const comHbGlicada = activeRows.filter((r) => r["HB GLICADA"] && r["HB GLICADA"] !== "").length;
   const comAvalPes = activeRows.filter((r) => r["DATA DA AVALIAÇÃO DOS PÉS ATUAL"] && r["DATA DA AVALIAÇÃO DOS PÉS ATUAL"] !== "").length;
   const comPA = activeRows.filter((r) => r["DATA PA ATUAL"] && r["DATA PA ATUAL"] !== "").length;
-  const realizadas = activeRows.filter((r) => r["TODAS AS BOAS PRÁTICAS"]?.toUpperCase().includes("REALIZADA")).length;
-  const faltando = activeRows.filter((r) => r["TODAS AS BOAS PRÁTICAS"]?.toUpperCase().includes("FALTANDO")).length;
+  const realizadas = activeRows.filter((r) => r["STATUS DAS BOAS PRÁTICAS"]?.toUpperCase().includes("REALIZADA")).length;
+  const faltando = activeRows.filter((r) => r["STATUS DAS BOAS PRÁTICAS"]?.toUpperCase().includes("FALTANDO")).length;
 
   return (
     <div className="space-y-6 animate-fade-in">
