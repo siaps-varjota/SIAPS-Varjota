@@ -227,8 +227,8 @@ export function DataTable({
       head: [tableHeaders],
       body: tableBody,
       startY: 35,
-      styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: { fillColor: [20, 83, 90], textColor: 255 },
+      styles: { fontSize: 8, cellPadding: 2, halign: 'center' },
+      headStyles: { fillColor: [20, 83, 90], textColor: 255, halign: 'center' },
       alternateRowStyles: { fillColor: [240, 240, 240] },
     });
     
@@ -399,9 +399,9 @@ export function DataTable({
                   <TableHead
                     key={header}
                     onClick={() => handleSort(header)}
-                    className="cursor-pointer hover:bg-muted/80 transition-colors whitespace-nowrap font-semibold text-xs"
+                    className="cursor-pointer hover:bg-muted/80 transition-colors whitespace-nowrap font-semibold text-xs text-center"
                   >
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center justify-center gap-1">
                       {header}
                       {sortColumn === header && (
                         <span className="text-primary">
@@ -433,13 +433,13 @@ export function DataTable({
                       {(currentPage - 1) * rowsPerPage + idx + 1}
                     </TableCell>
                     {visibleHeaders.map((header) => (
-                      <TableCell key={header} className="text-sm py-3">
+                      <TableCell key={header} className="text-sm py-3 text-center">
                         {isStatusColumn(header) && row[header] ? (
                           <Badge variant={getStatusVariant(row[header])}>
                             {row[header]}
                           </Badge>
                         ) : (
-                          <span className="truncate max-w-[200px] block">
+                          <span className="truncate max-w-[200px] block mx-auto">
                             {row[header] || "—"}
                           </span>
                         )}
