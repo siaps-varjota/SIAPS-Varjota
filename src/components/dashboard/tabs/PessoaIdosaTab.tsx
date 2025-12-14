@@ -6,7 +6,6 @@ import { ErrorState } from "../ErrorState";
 import { MetricCard } from "../MetricCard";
 import { DataTable } from "../DataTable";
 import { ProgressChart } from "../ProgressChart";
-import { ColumnMetrics } from "../ColumnMetrics";
 import { Users, Stethoscope, Syringe, CheckCircle2 } from "lucide-react";
 
 export function PessoaIdosaTab() {
@@ -116,13 +115,6 @@ export function PessoaIdosaTab() {
           </div>
         </div>
       </div>
-
-      <ColumnMetrics 
-        rows={activeRows} 
-        headers={data.headers} 
-        columnStart={1} 
-        columnEnd={11} 
-      />
 
       <div className="bg-card rounded-xl border p-5 shadow-card">
         <h3 className="text-lg font-semibold text-foreground mb-4">

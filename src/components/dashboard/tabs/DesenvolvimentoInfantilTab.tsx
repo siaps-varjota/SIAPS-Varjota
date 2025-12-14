@@ -6,7 +6,6 @@ import { ErrorState } from "../ErrorState";
 import { MetricCard } from "../MetricCard";
 import { DataTable } from "../DataTable";
 import { ProgressChart } from "../ProgressChart";
-import { ColumnMetrics } from "../ColumnMetrics";
 import { Baby, Users, CheckCircle2, Stethoscope } from "lucide-react";
 
 export function DesenvolvimentoInfantilTab() {
@@ -139,13 +138,6 @@ export function DesenvolvimentoInfantilTab() {
           </div>
         </div>
       </div>
-
-      <ColumnMetrics 
-        rows={activeRows} 
-        headers={data.headers} 
-        columnStart={1} 
-        columnEnd={14} 
-      />
 
       <div className="bg-card rounded-xl border p-5 shadow-card">
         <h3 className="text-lg font-semibold text-foreground mb-4">
