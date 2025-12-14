@@ -104,55 +104,39 @@ export function ColumnMetrics({ rows, headers, columnStart, columnEnd }: ColumnM
 
   if (metrics.length === 0) return null;
 
+  // Define colors for alternating progress bars
+  const colors = ["bg-primary", "bg-amber-500", "bg-success", "bg-info", "bg-orange-500", "bg-cyan-500"];
+
   return (
     <div className="bg-card rounded-xl border p-5 shadow-card">
       <h3 className="text-lg font-semibold text-foreground mb-4">
-        Quantitativos por Coluna
+        Indicadores de Acompanhamento
       </h3>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b">
-              <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Indicador</th>
-              <th className="text-center py-2 px-3 font-semibold text-muted-foreground">Sim/Preenchido</th>
-              <th className="text-center py-2 px-3 font-semibold text-muted-foreground">%</th>
-              <th className="text-center py-2 px-3 font-semibold text-muted-foreground">Não/Pendente</th>
-              <th className="text-center py-2 px-3 font-semibold text-muted-foreground">%</th>
-            </tr>
-          </thead>
-          <tbody>
-            {metrics.map((metric, idx) => {
-              const positiveCount = metric.simCount > 0 ? metric.simCount : metric.filledCount;
-              const negativeCount = metric.naoCount > 0 ? metric.naoCount : (metric.total - positiveCount);
-              const positivePercent = metric.total > 0 ? Math.round((positiveCount / metric.total) * 100) : 0;
-              const negativePercent = metric.total > 0 ? Math.round((negativeCount / metric.total) * 100) : 0;
-              
-              return (
-                <tr key={idx} className="border-b last:border-0 hover:bg-muted/30">
-                  <td className="py-2 px-3 font-medium text-foreground max-w-[250px] truncate" title={metric.header}>
-                    {metric.header}
-                  </td>
-                  <td className="py-2 px-3 text-center">
-                    <span className="inline-flex items-center justify-center min-w-[40px] px-2 py-1 rounded-md bg-success/10 text-success font-semibold">
-                      {positiveCount}
-                    </span>
-                  </td>
-                  <td className="py-2 px-3 text-center text-muted-foreground">
-                    {positivePercent}%
-                  </td>
-                  <td className="py-2 px-3 text-center">
-                    <span className="inline-flex items-center justify-center min-w-[40px] px-2 py-1 rounded-md bg-destructive/10 text-destructive font-semibold">
-                      {negativeCount}
-                    </span>
-                  </td>
-                  <td className="py-2 px-3 text-center text-muted-foreground">
-                    {negativePercent}%
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div className="space-y-4">
+        {metrics.map((metric, idx) => {
+          const positiveCount = metric.simCount > 0 ? metric.simCount : metric.filledCount;
+          const positivePercent = metric.total > 0 ? Math.round((positiveCount / metric.total) * 100) : 0;
+          const colorClass = colors[idx % colors.length];
+          
+          return (
+            <div key={idx} className="space-y-1.5">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-medium text-foreground truncate max-w-[70%]" title={metric.header}>
+                  {metric.header}
+                </span>
+                <span className="text-muted-foreground font-medium tabular-nums">
+                  {positiveCount} / {metric.total} ({positivePercent}%)
+                </span>
+              </div>
+              <div className="h-3 bg-muted rounded-full overflow-hidden">
+                <div
+                  className={`h-full ${colorClass} rounded-full transition-all duration-500`}
+                  style={{ width: `${positivePercent}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
