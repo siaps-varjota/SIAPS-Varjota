@@ -309,16 +309,20 @@
           <select id="filter-boas-praticas"><option value="">Todos</option></select>
         </div>`;
 
-      html += `
+      if (currentTab.id === "tab1") {
+        html += `
         <div class="filter-group">
           <label>Quadrimestre</label>
           <select id="filter-quadrimestre"><option value="">Todos</option></select>
         </div>`;
-      html += `
+      }
+      if (currentTab.id === "tab2") {
+        html += `
         <div class="filter-group">
           <label>Status Vacinas</label>
           <select id="filter-vacinas"><option value="">Todos</option></select>
         </div>`;
+      }
 
       html += `
         <div class="filter-group">
@@ -406,6 +410,11 @@
         const quadValues = [...new Set(allData.map(r => getQuadrimestre(r)).filter(Boolean))];
         populate("filter-quadrimestre", quadValues);
       }
+      if (currentTab.id === "tab2") {
+        const vacinasValues = [...new Set(allData.map(r => r["STATUS DAS VACINAS"]).filter(Boolean))];
+        populate("filter-vacinas", vacinasValues);
+      }
+      }
     }
 
     function getFilters() {
@@ -416,8 +425,12 @@
         prioridade: document.getElementById("filter-prioridade")?.value || ""
       };
 
-      f.quadrimestre = document.getElementById("filter-quadrimestre")?.value || "";
-      f.vacinas = document.getElementById("filter-vacinas")?.value || "";
+      if (currentTab.id === "tab1") {
+        f.quadrimestre = document.getElementById("filter-quadrimestre")?.value || "";
+      }
+      if (currentTab.id === "tab2") {
+        f.vacinas = document.getElementById("filter-vacinas")?.value || "";
+      }
 
       return f;
     }
@@ -430,9 +443,9 @@
         if (f.equipe && equipe !== f.equipe) return false;
         if (f.microarea && r["Microárea"] !== f.microarea) return false;
         if (f.boasPraticas && r["STATUS DAS BOAS PRÁTICAS"] !== f.boasPraticas) return false;
-        if (f.vacinas && r["STATUS DAS VACINAS"] !== f.vacinas) return false;
         if (f.prioridade && r["PRIORIDADE"] !== f.prioridade) return false;
-        if (f.quadrimestre && getQuadrimestre(r) !== f.quadrimestre) return false;
+        if (currentTab.id === "tab1" && f.quadrimestre && getQuadrimestre(r) !== f.quadrimestre) return false;
+        if (currentTab.id === "tab2" && f.vacinas && r["STATUS DAS VACINAS"] !== f.vacinas) return false;
         return true;
       });
 
@@ -514,25 +527,32 @@
 
       if (currentTab.id === "tab1") {
         const cardNames = ["1ª CONSULTA <=30 DIAS", "VISITAS ACS (2)", "CONSULTAS (9)", "PESO & ALTURA (9)", "VACINAS"];
-        let sumOfResults = 0;
-        let totalRecords = data.length;
+        let sumOfPercentages = 0;
+        let validCards = 0;
+        
         cardNames.forEach(name => {
           const col = headers.find(h => h.toUpperCase() === name.toUpperCase());
           if (col) {
             let count = 0;
+            let total = data.length;
+            
             data.forEach(r => {
               const valUpper = (r[col] || "").trim().toUpperCase();
               if (valUpper === "SIM" || valUpper === "REALIZADAS" || valUpper === "PROVÁVEL" || (valUpper && !["", "0", "NÃO", "N.A.", "FALTANDO", "PRIORIDADE", "ATRASADAS", "NÃO PROVÁVEL"].includes(valUpper))) {
                 count++;
               }
             });
-            sumOfResults += count;
+            
+            const percentage = total > 0 ? (count / total) * 100 : 0;
+            sumOfPercentages += percentage;
+            validCards++;
           }
         });
-        const pontuacao = totalRecords > 0 ? (sumOfResults * 20) / totalRecords : 0;
+        
+        const pontuacao = validCards > 0 ? sumOfPercentages / validCards : 0;
         const pontuacaoCard = `<div class="card primary">
           <div class="card-title">PONTUAÇÃO</div>
-          <div><span class="card-value">${pontuacao.toFixed(2)}</span> <span class="card-total">/ ${totalRecords}</span></div>
+          <div><span class="card-value">${pontuacao.toFixed(2)}</span> <span class="card-total">/ 100%</span></div>
           <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(100, pontuacao)}%"></div></div>
         </div>`;
         cards.push(pontuacaoCard);
@@ -626,9 +646,9 @@
         if (f.equipe && equipe !== f.equipe) return false;
         if (f.microarea && r["Microárea"] !== f.microarea) return false;
         if (f.boasPraticas && r["STATUS DAS BOAS PRÁTICAS"] !== f.boasPraticas) return false;
-        if (f.vacinas && r["STATUS DAS VACINAS"] !== f.vacinas) return false;
         if (f.prioridade && r["PRIORIDADE"] !== f.prioridade) return false;
-        if (f.quadrimestre && getQuadrimestre(r) !== f.quadrimestre) return false;
+        if (currentTab.id === "tab1" && f.quadrimestre && getQuadrimestre(r) !== f.quadrimestre) return false;
+        if (currentTab.id === "tab2" && f.vacinas && r["STATUS DAS VACINAS"] !== f.vacinas) return false;
         return true;
       });
       const sorted = sortData(filtered);
@@ -695,4 +715,3 @@
   </script>
 </body>
 </html>
-
