@@ -3,10 +3,8 @@ import { useCsvData, CsvRow } from "@/hooks/useCsvData";
 import { CSV_URLS } from "@/lib/csvUrls";
 import { LoadingState } from "../LoadingState";
 import { ErrorState } from "../ErrorState";
-import { MetricCard } from "../MetricCard";
 import { DataTable } from "../DataTable";
-import { ProgressChart } from "../ProgressChart";
-import { Baby, Users, Stethoscope, FileCheck } from "lucide-react";
+import { IndicatorCard } from "../IndicatorCard";
 
 export function GestacaoTab() {
   const { data, loading, error } = useCsvData(CSV_URLS.gestacaoPuerperio);
@@ -29,107 +27,78 @@ export function GestacaoTab() {
   const seteConsultas = activeRows.filter((r) => r["Consultas de Pré-natal (7)"] === "SIM").length;
   const consultaOdonto = activeRows.filter((r) => r["Consultas odonto (1)"] === "SIM").length;
   const exames1Tri = activeRows.filter((r) => r["EXAMES 1º TRI (SIM)"] === "SIM").length;
+  const exames3Tri = activeRows.filter((r) => r["Exames 3º TRI"] === "SIM").length;
   const visitaPuerperio = activeRows.filter((r) => r["Visita no puerpério (1)"] === "SIM").length;
   const visitaPN = activeRows.filter((r) => r["Visita no PN (3)"] === "SIM").length;
   const consultaPuerperio = activeRows.filter((r) => r["Consultas no puerpério (1)"] === "SIM").length;
   const vacinaDtpa = activeRows.filter((r) => r["dTpa"] && r["dTpa"] !== "" && r["dTpa"] !== "0").length;
+  const pesoAltura = activeRows.filter((r) => r["Peso + Altura (7)"] === "SIM").length;
+  const afericoesPA = activeRows.filter((r) => r["Aferições de PA (7)"] === "SIM").length;
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard
-          title="Total de Gestantes"
-          value={total}
-          icon={Baby}
-          variant="info"
-        />
-        <MetricCard
-          title="Consulta ≤12 semanas"
+        <IndicatorCard
+          title="Consultas 1º Trimestre (1+)"
           value={consultaAte12Sem}
-          subtitle={total > 0 ? `${Math.round((consultaAte12Sem / total) * 100)}% do total` : "0%"}
-          icon={Stethoscope}
-          variant="success"
+          total={total}
         />
-        <MetricCard
-          title="7+ Consultas Pré-Natal"
+        <IndicatorCard
+          title="Pré-natal (7+)"
           value={seteConsultas}
-          subtitle={total > 0 ? `${Math.round((seteConsultas / total) * 100)}% do total` : "0%"}
-          icon={FileCheck}
-          variant="default"
+          total={total}
         />
-        <MetricCard
-          title="Visita Puerpério"
-          value={visitaPuerperio}
-          subtitle={total > 0 ? `${Math.round((visitaPuerperio / total) * 100)}% do total` : "0%"}
-          icon={Users}
-          variant="success"
+        <IndicatorCard
+          title="Consultas odonto (1+)"
+          value={consultaOdonto}
+          total={total}
+        />
+        <IndicatorCard
+          title="Aferições de PA (7+)"
+          value={afericoesPA}
+          total={total}
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-card rounded-xl border p-5 shadow-card">
-          <h3 className="text-lg font-semibold text-foreground mb-4">
-            Indicadores de Pré-Natal
-          </h3>
-          <div className="space-y-4">
-            <ProgressChart
-              label="Consulta até 12 semanas"
-              value={consultaAte12Sem}
-              total={total}
-              color="primary"
-            />
-            <ProgressChart
-              label="7+ Consultas de Pré-natal"
-              value={seteConsultas}
-              total={total}
-              color="success"
-            />
-            <ProgressChart
-              label="Consulta Odontológica"
-              value={consultaOdonto}
-              total={total}
-              color="info"
-            />
-            <ProgressChart
-              label="Exames 1º Trimestre"
-              value={exames1Tri}
-              total={total}
-              color="warning"
-            />
-          </div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <IndicatorCard
+          title="Peso + Altura (7+)"
+          value={pesoAltura}
+          total={total}
+        />
+        <IndicatorCard
+          title="Exames 1º TRI (SIM)"
+          value={exames1Tri}
+          total={total}
+        />
+        <IndicatorCard
+          title="Exames 3º TRI (SIM)"
+          value={exames3Tri}
+          total={total}
+        />
+        <IndicatorCard
+          title="Visita no PN (3+)"
+          value={visitaPN}
+          total={total}
+        />
+      </div>
 
-        <div className="bg-card rounded-xl border p-5 shadow-card">
-          <h3 className="text-lg font-semibold text-foreground mb-4">
-            Indicadores de Puerpério
-          </h3>
-          <div className="space-y-4">
-            <ProgressChart
-              label="3+ Visitas no Pré-natal"
-              value={visitaPN}
-              total={total}
-              color="primary"
-            />
-            <ProgressChart
-              label="Visita no Puerpério"
-              value={visitaPuerperio}
-              total={total}
-              color="success"
-            />
-            <ProgressChart
-              label="Consulta Puerpério"
-              value={consultaPuerperio}
-              total={total}
-              color="info"
-            />
-            <ProgressChart
-              label="Vacina dTpa"
-              value={vacinaDtpa}
-              total={total}
-              color="warning"
-            />
-          </div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <IndicatorCard
+          title="Visita no puerpério (1+)"
+          value={visitaPuerperio}
+          total={total}
+        />
+        <IndicatorCard
+          title="Consultas no puerpério (1+)"
+          value={consultaPuerperio}
+          total={total}
+        />
+        <IndicatorCard
+          title="dTpa"
+          value={vacinaDtpa}
+          total={total}
+        />
       </div>
 
       <div className="bg-card rounded-xl border p-5 shadow-card">
