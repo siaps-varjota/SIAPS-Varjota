@@ -23,7 +23,7 @@ export const TAB_LABELS: Record<TabKey, string> = {
 export const TAB_ICONS: Record<TabKey, string> = {
   desenvolvimentoInfantil: "baby",
   desenvolvimentoInfantilVacinas: "syringe",
-  gestacaoPuerperio: "person-standing",
+  gestacaoPuerperio: "baby",
   hipertensao: "activity",
   diabetes: "droplet",
   saudeMulher: "user-round",
