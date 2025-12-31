@@ -6,7 +6,7 @@ import { ErrorState } from "../ErrorState";
 import { MetricCard } from "../MetricCard";
 import { DataTable } from "../DataTable";
 import { ProgressChart } from "../ProgressChart";
-import { HeartPulse, Users, Stethoscope, FileCheck } from "lucide-react";
+import { Baby, Users, Stethoscope, FileCheck } from "lucide-react";
 
 export function GestacaoTab() {
   const { data, loading, error } = useCsvData(CSV_URLS.gestacaoPuerperio);
@@ -40,7 +40,7 @@ export function GestacaoTab() {
         <MetricCard
           title="Total de Gestantes"
           value={total}
-          icon={HeartPulse}
+          icon={Baby}
           variant="info"
         />
         <MetricCard
