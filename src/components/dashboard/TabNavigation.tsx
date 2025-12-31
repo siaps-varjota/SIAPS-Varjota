@@ -3,17 +3,17 @@ import { TabKey, TAB_LABELS } from "@/lib/csvUrls";
 import {
   Baby,
   Syringe,
-  HeartPulse,
   Activity,
   Droplet,
   UserRound,
   Users,
+  PersonStanding,
 } from "lucide-react";
 
 const TAB_ICON_COMPONENTS: Record<TabKey, React.ComponentType<{ className?: string }>> = {
   desenvolvimentoInfantil: Baby,
   desenvolvimentoInfantilVacinas: Syringe,
-  gestacaoPuerperio: HeartPulse,
+  gestacaoPuerperio: PersonStanding,
   hipertensao: Activity,
   diabetes: Droplet,
   saudeMulher: UserRound,
