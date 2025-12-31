@@ -8,11 +8,12 @@ import {
   UserRound,
   Users,
 } from "lucide-react";
+import { PregnantIcon } from "@/components/icons/PregnantIcon";
 
 const TAB_ICON_COMPONENTS: Record<TabKey, React.ComponentType<{ className?: string }>> = {
   desenvolvimentoInfantil: Baby,
   desenvolvimentoInfantilVacinas: Syringe,
-  gestacaoPuerperio: Baby,
+  gestacaoPuerperio: PregnantIcon,
   hipertensao: Activity,
   diabetes: Droplet,
   saudeMulher: UserRound,
