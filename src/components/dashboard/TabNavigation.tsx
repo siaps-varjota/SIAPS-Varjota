@@ -7,13 +7,12 @@ import {
   Droplet,
   UserRound,
   Users,
-  PersonStanding,
 } from "lucide-react";
 
 const TAB_ICON_COMPONENTS: Record<TabKey, React.ComponentType<{ className?: string }>> = {
   desenvolvimentoInfantil: Baby,
   desenvolvimentoInfantilVacinas: Syringe,
-  gestacaoPuerperio: PersonStanding,
+  gestacaoPuerperio: Baby,
   hipertensao: Activity,
   diabetes: Droplet,
   saudeMulher: UserRound,
